@@ -1,0 +1,122 @@
+{
+  "name": "Days Of Week",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [
+        420,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 7
+            }
+          ]
+        }
+      },
+      "name": "Cron",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        410,
+        430
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "mail",
+        "fromEmail": "info@puhulab.com",
+        "fromName": "Puhulab",
+        "toEmail": "omer@farukcan.net",
+        "subject": "={{$node[\"Date & Time\"].json[\"data\"]}}",
+        "contentType": "text/html",
+        "contentValue": "={{$node[\"HTTP Request\"].json[\"data\"]}}",
+        "additionalFields": {}
+      },
+      "name": "SendGrid",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [
+        1050,
+        430
+      ],
+      "credentials": {
+        "sendGridApi": "Send Grid API"
+      }
+    },
+    {
+      "parameters": {
+        "value": "={{Math.floor((Date.now()+1000*60*60*3)/1000)}}",
+        "custom": true,
+        "toFormat": "dddd",
+        "options": {}
+      },
+      "name": "Date & Time",
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 1,
+      "position": [
+        610,
+        430
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://days.farukcan.net/{{$node[\"Date & Time\"].json[\"data\"]}}",
+        "responseFormat": "string",
+        "options": {}
+      },
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        810,
+        430
+      ]
+    }
+  ],
+  "connections": {
+    "Cron": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "SendGrid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "id": "5"
+}
