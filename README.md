@@ -8,4 +8,4 @@ Haftanın birbirinden özel 7 günü hakkında sabah yedide email alarak günler
 
 ---
 
-Katkıda bulunmak için Issue oluşturabilirsiniz.
+Katkıda bulunmak ve fikirleriniz için Issue oluşturabilirsiniz.
