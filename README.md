@@ -1,5 +1,7 @@
 # Haftanın Günleri
-Days Of Week
+Bugün ne yapsam, bugünümün gündemi ne olmalı diye kendine soruyor musun? 
 
-### [Notion](https://farukcan.notion.site/Zaman-Anlamlar-5f588faa084e44ef83533849f8b439e4)
-### [Website](https://days.puhulab.com/)
+Haftanın birbirinden özel 7 günü hakkında sabah yedide email alarak hayatını daha düzenli hale getir!
+
+#### [Notion'dan Taslakları Gör](https://farukcan.notion.site/Zaman-Anlamlar-5f588faa084e44ef83533849f8b439e4)
+#### [Website'den Kaydol](https://days.puhulab.com/)
