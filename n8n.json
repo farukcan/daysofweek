@@ -31,28 +31,6 @@
     },
     {
       "parameters": {
-        "resource": "mail",
-        "fromEmail": "info@puhulab.com",
-        "fromName": "Puhulab",
-        "toEmail": "omer@farukcan.net",
-        "subject": "={{$node[\"Date & Time\"].json[\"data\"]}}",
-        "contentType": "text/html",
-        "contentValue": "={{$node[\"HTTP Request\"].json[\"data\"]}}",
-        "additionalFields": {}
-      },
-      "name": "SendGrid",
-      "type": "n8n-nodes-base.sendGrid",
-      "typeVersion": 1,
-      "position": [
-        1050,
-        430
-      ],
-      "credentials": {
-        "sendGridApi": "Send Grid API"
-      }
-    },
-    {
-      "parameters": {
         "value": "={{Math.floor((Date.now()+1000*60*60*3)/1000)}}",
         "custom": true,
         "toFormat": "dddd",
@@ -68,16 +46,128 @@
     },
     {
       "parameters": {
-        "url": "=https://days.farukcan.net/{{$node[\"Date & Time\"].json[\"data\"]}}",
-        "responseFormat": "string",
+        "operation": "get",
+        "listId": "6cd42b35-ea57-46d8-9828-b7a6defd8f1a",
+        "contactSample": true
+      },
+      "name": "SendGrid List",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [
+        780,
+        430
+      ],
+      "credentials": {
+        "sendGridApi": "Send Grid API"
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "let array = $node[\"SendGrid List\"].json[\"contact_sample\"].map((i)=>{return {json:[i]}})\nreturn array;"
+      },
+      "name": "Mails",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        960,
+        430
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const days = {\n  Monday:\"d-2bdede0a56c04fa4a0635ef6f840a0fe\",\n  Tuesday:\"d-7c36e31e03b84a23ad543591fad8e3ac\",\n  Wednesday:\"d-6a7a23cbf4684215b54beb1ac97a1d2e\",\n  Thursday:\"d-5348506026ef461795246d3f2dfd22c7\",\n  Friday:\"d-7ab5ad674e144bcfb0d99f35d70146df\",\n  Saturday:\"d-43c88f76774c44d7bbf698e0f8e438e7\",\n  Sunday:\"d-be8087d02c374ae5b60ad3639ae2b27f\"\n}\n\nlet id = days[$node[\"Date & Time\"].json[\"data\"]];\nreturn [{json:[id]}];"
+      },
+      "name": "TemplateIds",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1350,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": "=1",
         "options": {}
       },
-      "name": "HTTP Request",
+      "name": "Batch",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [
+        1110,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{{encodeURI($node[\"Batch\"].json[\"0\"][\"city\"]+\" ,\"+$node[\"Batch\"].json[\"0\"][\"country\"])}}?unitGroup=metric&key=PUT_YOUR_API_KEY_HERE&contentType=json",
+        "options": {}
+      },
+      "name": "Weather",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
       "position": [
-        810,
-        430
+        1260,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "mail",
+        "fromEmail": "info@puhulab.com",
+        "fromName": "Puhulab",
+        "toEmail": "={{$node[\"Batch\"].json[\"0\"][\"email\"]}}",
+        "dynamicTemplate": true,
+        "templateId": "={{$node[\"TemplateIds\"].json[\"0\"]}}",
+        "dynamicTemplateFields": {
+          "fields": [
+            {
+              "key": "weather",
+              "value": "=<img src=\"https://cdn.jsdelivr.net/gh/visualcrossing/WeatherIcons/PNG/1st%20Set%20-%20Color/{{$node[\"Weather\"].json[\"currentConditions\"][\"icon\"]}}.png\"/><br/>\n<b>Hava Durumu</b>: {{$node[\"Weather\"].json[\"currentConditions\"][\"conditions\"]}}, {{$node[\"Weather\"].json[\"description\"]}} [ {{$node[\"Weather\"].json[\"resolvedAddress\"]}} ]  <br/>\nSıcaklık: {{$node[\"Weather\"].json[\"currentConditions\"][\"temp\"]}} , Hissedilen. {{$node[\"Weather\"].json[\"currentConditions\"][\"feelslike\"]}} (Santigrat) <br/>\nNem: {{$node[\"Weather\"].json[\"currentConditions\"][\"humidity\"]}} % , Bulut: {{$node[\"Weather\"].json[\"currentConditions\"][\"cloudcover\"]}} % <br/>\nDolunay: {{$node[\"Weather\"].json[\"currentConditions\"][\"moonphase\"]*100}} % , Basınç: {{$node[\"Weather\"].json[\"currentConditions\"][\"pressure\"]}} <br/>\nYağış: {{$node[\"Weather\"].json[\"currentConditions\"][\"precip\"]}}, {{$node[\"Weather\"].json[\"currentConditions\"][\"precipprob\"]}} , Kar: {{$node[\"Weather\"].json[\"currentConditions\"][\"snow\"]}}, {{$node[\"Weather\"].json[\"currentConditions\"][\"snowdepth\"]}}, Rüzgar: {{$node[\"Weather\"].json[\"currentConditions\"][\"windspeed\"]}}, {{$node[\"Weather\"].json[\"currentConditions\"][\"windgust\"]}}, {{$node[\"Weather\"].json[\"currentConditions\"][\"winddir\"]}} <br/>\nGüneş: Doğuş:{{$node[\"Weather\"].json[\"currentConditions\"][\"sunrise\"]}} , Batış: {{$node[\"Weather\"].json[\"currentConditions\"][\"sunset\"]}}, UV:{{$node[\"Weather\"].json[\"currentConditions\"][\"uvindex\"]}}/10 , Enerji: {{$node[\"Weather\"].json[\"currentConditions\"][\"solarenergy\"]}}, Radyasyon: {{$node[\"Weather\"].json[\"currentConditions\"][\"solarradiation\"]}} <br/>"
+            },
+            {
+              "key": "quote",
+              "value": "={{$node[\"Quote\"].json[\"0\"]}}"
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "name": "SendGrid",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [
+        1510,
+        150
+      ],
+      "credentials": {
+        "sendGridApi": "Send Grid API"
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://cdn.jsdelivr.net/gh/puhulab/daysofweek/quotes.txt",
+        "responseFormat": "string",
+        "options": {}
+      },
+      "name": "Quotes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        580,
+        650
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "let results = $node[\"Quotes\"].json[\"data\"].match(/[^\\r\\n]+/g);\nlet result = results[Math.floor(Math.random()*results.length)];\nreturn [{json:[result]}];"
+      },
+      "name": "Quote",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        720,
+        650
       ]
     }
   ],
@@ -86,7 +176,7 @@
       "main": [
         [
           {
-            "node": "Date & Time",
+            "node": "Quotes",
             "type": "main",
             "index": 0
           }
@@ -97,14 +187,58 @@
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "SendGrid List",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP Request": {
+    "SendGrid List": {
+      "main": [
+        [
+          {
+            "node": "Mails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mails": {
+      "main": [
+        [
+          {
+            "node": "Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch": {
+      "main": [
+        [
+          {
+            "node": "Weather",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather": {
+      "main": [
+        [
+          {
+            "node": "TemplateIds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TemplateIds": {
       "main": [
         [
           {
@@ -114,9 +248,45 @@
           }
         ]
       ]
+    },
+    "SendGrid": {
+      "main": [
+        [
+          {
+            "node": "Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quotes": {
+      "main": [
+        [
+          {
+            "node": "Quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quote": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
-  "settings": {},
+  "active": true,
+  "settings": {
+    "timezone": "Europe/Moscow",
+    "saveExecutionProgress": "DEFAULT"
+  },
   "id": "5"
 }
